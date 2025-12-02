@@ -113,7 +113,8 @@ Then type messages and press Enter.
 ./proxy --listen-ip 127.0.0.1 --listen-port 4000 \
         --target-ip 127.0.0.1 --target-port 5000 \
         --client-drop 0 --server-drop 0 \
-        --client-delay 0 --server-delay 0
+        --client-delay 0 --server-delay 0 \
+        --log-file proxy.log
 ```
 
 ### Test 2: 5% drop, 0% delay
@@ -121,7 +122,8 @@ Then type messages and press Enter.
 ./proxy --listen-ip 127.0.0.1 --listen-port 4000 \
         --target-ip 127.0.0.1 --target-port 5000 \
         --client-drop 5 --server-drop 5 \
-        --client-delay 0 --server-delay 0
+        --client-delay 0 --server-delay 0 \
+        --log-file proxy.log
 ```
 
 ### Test 3: 10% drop, 0% delay
@@ -129,7 +131,8 @@ Then type messages and press Enter.
 ./proxy --listen-ip 127.0.0.1 --listen-port 4000 \
         --target-ip 127.0.0.1 --target-port 5000 \
         --client-drop 10 --server-drop 10 \
-        --client-delay 0 --server-delay 0
+        --client-delay 0 --server-delay 0 \
+        --log-file proxy.log
 ```
 
 ### Test 4: 0% drop, 50% delay (100-500ms)
@@ -139,7 +142,8 @@ Then type messages and press Enter.
         --client-drop 0 --server-drop 0 \
         --client-delay 50 --server-delay 50 \
         --client-delay-time-min 100 --client-delay-time-max 500 \
-        --server-delay-time-min 100 --server-delay-time-max 500
+        --server-delay-time-min 100 --server-delay-time-max 500 \
+        --log-file proxy.log
 ```
 
 ### Test 5: 0% drop, 100% delay (>= client timeout)
@@ -150,7 +154,8 @@ Then type messages and press Enter.
         --client-drop 0 --server-drop 0 \
         --client-delay 100 --server-delay 100 \
         --client-delay-time-min 2500 --client-delay-time-max 3000 \
-        --server-delay-time-min 2500 --server-delay-time-max 3000
+        --server-delay-time-min 2500 --server-delay-time-max 3000 \
+        --log-file proxy.log
 ```
 
 ### Test 6: 50% drop, 50% delay
@@ -160,7 +165,8 @@ Then type messages and press Enter.
         --client-drop 50 --server-drop 50 \
         --client-delay 50 --server-delay 50 \
         --client-delay-time-min 2500 --client-delay-time-max 3000 \
-        --server-delay-time-min 2500 --server-delay-time-max 3000
+        --server-delay-time-min 2500 --server-delay-time-max 3000 \
+        --log-file proxy.log
 ```
 
 ## Log Visualization
