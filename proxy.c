@@ -9,6 +9,7 @@
 #include <errno.h>
 #include <signal.h>
 #include <sys/time.h>
+#include <sys/select.h>
 
 static volatile int running = 1;
 
