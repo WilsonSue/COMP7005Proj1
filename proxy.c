@@ -193,8 +193,13 @@ int main(int argc, char *argv[]) {
         return EXIT_FAILURE;
     }
 
-    struct sockaddr_in client_addr;
-    socklen_t client_len;
+    // Store the last known client address (for sending ACKs back)
+    struct sockaddr_in last_client_addr;
+    socklen_t last_client_len = 0;
+    int have_client_addr = 0;
+
+    struct sockaddr_in from_addr;
+    socklen_t from_len;
     uint8_t buffer[2048];
 
     printf("Proxy running on %s:%d -> %s:%d\n",
@@ -219,9 +224,9 @@ int main(int argc, char *argv[]) {
         }
 
         if (ready > 0 && FD_ISSET(sockfd, &readfds)) {
-            client_len = sizeof(client_addr);
+            from_len = sizeof(from_addr);
             ssize_t recv_len = recvfrom(sockfd, buffer, sizeof(buffer), 0,
-                                       (struct sockaddr *)&client_addr, &client_len);
+                                       (struct sockaddr *)&from_addr, &from_len);
 
             if (recv_len < 0) {
                 log_proxy(log_fp, "ERROR: recvfrom failed: %s", strerror(errno));
@@ -229,17 +234,22 @@ int main(int argc, char *argv[]) {
             }
 
             char from_ip[INET_ADDRSTRLEN];
-            inet_ntop(AF_INET, &client_addr.sin_addr, from_ip, sizeof(from_ip));
-            int from_port = ntohs(client_addr.sin_port);
+            inet_ntop(AF_INET, &from_addr.sin_addr, from_ip, sizeof(from_ip));
+            int from_port = ntohs(from_addr.sin_port);
 
-            // Determine direction
-            int is_from_client = (strcmp(from_ip, config.target_ip) != 0 ||
-                                 from_port != config.target_port);
+            // Determine direction: check if this is from the target server
+            int is_from_server = (strcmp(from_ip, config.target_ip) == 0 &&
+                                 from_port == config.target_port);
 
-            if (is_from_client) {
+            if (!is_from_server) {
                 // Client -> Server
                 log_proxy(log_fp, "C->S: Received %zd bytes from %s:%d",
                          recv_len, from_ip, from_port);
+
+                // Store client address for later use
+                memcpy(&last_client_addr, &from_addr, sizeof(from_addr));
+                last_client_len = from_len;
+                have_client_addr = 1;
 
                 if (should_drop(config.client_drop)) {
                     log_proxy(log_fp, "C->S: DROPPED");
@@ -267,6 +277,11 @@ int main(int argc, char *argv[]) {
                 // Server -> Client
                 log_proxy(log_fp, "S->C: Received %zd bytes from server", recv_len);
 
+                if (!have_client_addr) {
+                    log_proxy(log_fp, "ERROR: No client address known, cannot forward");
+                    continue;
+                }
+
                 if (should_drop(config.server_drop)) {
                     log_proxy(log_fp, "S->C: DROPPED");
                     continue;
@@ -280,9 +295,17 @@ int main(int argc, char *argv[]) {
                     usleep(delay * 1000);
                 }
 
-                // Forward to original client
-                // Note: We need to track client address from previous packet
-                log_proxy(log_fp, "S->C: Forwarded %zd bytes to client", recv_len);
+                // Forward to client
+                ssize_t sent = sendto(sockfd, buffer, recv_len, 0,
+                                    (struct sockaddr *)&last_client_addr, last_client_len);
+                if (sent < 0) {
+                    log_proxy(log_fp, "ERROR: sendto client failed: %s", strerror(errno));
+                } else {
+                    char client_ip[INET_ADDRSTRLEN];
+                    inet_ntop(AF_INET, &last_client_addr.sin_addr, client_ip, sizeof(client_ip));
+                    log_proxy(log_fp, "S->C: Forwarded %zd bytes to %s:%d",
+                             sent, client_ip, ntohs(last_client_addr.sin_port));
+                }
             }
         }
     }

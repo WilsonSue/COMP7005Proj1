@@ -168,7 +168,7 @@ Then type messages and press Enter.
 After running tests, visualize the logs:
 
 ```bash
-python3 visualize_logs.py
+python3 visualize_log.py
 ```
 
 This generates statistics including:
