@@ -27,6 +27,10 @@ A reliable messaging system built on top of UDP with client-server architecture 
 - Message format with magic number, type, sequence number, and payload
 - Serialization/deserialization for network transmission
 
+## Prerequisite
+- sudo ufw allow 4000/udp  # On proxy
+- sudo ufw allow 5000/udp  # On server
+
 ## Building
 
 ```bash
@@ -44,12 +48,13 @@ This creates three executables:
 
 **Terminal 1 - Start Server:**
 ```bash
-./server --listen-ip 127.0.0.1 --listen-port 5000 --log-file server.log
+./server --listen-ip 192.168.1.78 --listen-port 5000 --log-file server.log
 ```
 
 **Terminal 2 - Run Client:**
 ```bash
-./client --target-ip 127.0.0.1 --target-port 5000 --timeout 2 --max-retries 5 --log-file client.log
+./client --target-ip 192.168.1.92 --target-port 4000 \
+         --timeout 2 --max-retries 5 --log-file client.log
 ```
 
 Then type messages and press Enter.
@@ -63,8 +68,8 @@ Then type messages and press Enter.
 
 **Terminal 2 - Start Proxy:**
 ```bash
-./proxy --listen-ip 127.0.0.1 --listen-port 4000 \
-        --target-ip 127.0.0.1 --target-port 5000 \
+./proxy --listen-ip 192.168.1.92 --listen-port 4000 \
+        --target-ip 192.168.1.78 --target-port 5000 \
         --client-drop 10 --server-drop 5 \
         --client-delay 20 --server-delay 15 \
         --client-delay-time-min 100 --client-delay-time-max 200 \
@@ -74,7 +79,8 @@ Then type messages and press Enter.
 
 **Terminal 3 - Run Client:**
 ```bash
-./client --target-ip 127.0.0.1 --target-port 4000 --timeout 2 --max-retries 5 --log-file client.log
+./client --target-ip 192.168.1.92 --target-port 4000 \
+         --timeout 2 --max-retries 5 --log-file client.log
 ```
 
 ## Command-Line Arguments
@@ -110,8 +116,8 @@ Then type messages and press Enter.
 
 ### Test 1: 0% drop, 0% delay
 ```bash
-./proxy --listen-ip 127.0.0.1 --listen-port 4000 \
-        --target-ip 127.0.0.1 --target-port 5000 \
+./proxy --listen-ip 192.168.1.92 --listen-port 4000 \
+        --target-ip 192.168.1.78 --target-port 5000 \
         --client-drop 0 --server-drop 0 \
         --client-delay 0 --server-delay 0 \
         --log-file proxy.log
@@ -119,8 +125,8 @@ Then type messages and press Enter.
 
 ### Test 2: 5% drop, 0% delay
 ```bash
-./proxy --listen-ip 127.0.0.1 --listen-port 4000 \
-        --target-ip 127.0.0.1 --target-port 5000 \
+./proxy --listen-ip 192.168.1.92 --listen-port 4000 \
+        --target-ip 192.168.1.78 --target-port 5000 \
         --client-drop 5 --server-drop 5 \
         --client-delay 0 --server-delay 0 \
         --log-file proxy.log
@@ -128,8 +134,8 @@ Then type messages and press Enter.
 
 ### Test 3: 10% drop, 0% delay
 ```bash
-./proxy --listen-ip 127.0.0.1 --listen-port 4000 \
-        --target-ip 127.0.0.1 --target-port 5000 \
+./proxy --listen-ip 192.168.1.92 --listen-port 4000 \
+        --target-ip 192.168.1.78 --target-port 5000 \
         --client-drop 10 --server-drop 10 \
         --client-delay 0 --server-delay 0 \
         --log-file proxy.log
@@ -137,8 +143,8 @@ Then type messages and press Enter.
 
 ### Test 4: 0% drop, 50% delay (100-500ms)
 ```bash
-./proxy --listen-ip 127.0.0.1 --listen-port 4000 \
-        --target-ip 127.0.0.1 --target-port 5000 \
+./proxy --listen-ip 192.168.1.92 --listen-port 4000 \
+        --target-ip 192.168.1.78 --target-port 5000 \
         --client-drop 0 --server-drop 0 \
         --client-delay 50 --server-delay 50 \
         --client-delay-time-min 100 --client-delay-time-max 500 \
@@ -149,8 +155,8 @@ Then type messages and press Enter.
 ### Test 5: 0% drop, 100% delay (>= client timeout)
 ```bash
 # With client timeout of 2 seconds, use delay > 2000ms
-./proxy --listen-ip 127.0.0.1 --listen-port 4000 \
-        --target-ip 127.0.0.1 --target-port 5000 \
+./proxy --listen-ip 192.168.1.92 --listen-port 4000 \
+        --target-ip 192.168.1.78 --target-port 5000 \
         --client-drop 0 --server-drop 0 \
         --client-delay 100 --server-delay 100 \
         --client-delay-time-min 2500 --client-delay-time-max 3000 \
@@ -160,8 +166,8 @@ Then type messages and press Enter.
 
 ### Test 6: 50% drop, 50% delay
 ```bash
-./proxy --listen-ip 127.0.0.1 --listen-port 4000 \
-        --target-ip 127.0.0.1 --target-port 5000 \
+./proxy --listen-ip 192.168.1.92 --listen-port 4000 \
+        --target-ip 192.168.1.78 --target-port 5000 \
         --client-drop 50 --server-drop 50 \
         --client-delay 50 --server-delay 50 \
         --client-delay-time-min 2500 --client-delay-time-max 3000 \
@@ -205,11 +211,3 @@ This generates statistics including:
 make clean        # Remove binaries and logs
 make kill-all     # Kill running server/proxy processes
 ```
-
-## Notes
-
-- All communication uses UDP (no TCP)
-- No connection setup/teardown
-- Supports one client at a time
-- Logs to both stderr and file
-- Network byte order used for multi-byte fields
