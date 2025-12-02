@@ -48,13 +48,13 @@ This creates three executables:
 
 **Terminal 1 - Start Server:**
 ```bash
-./server --listen-ip 192.168.1.78 --listen-port 5000 --log-file server.log
+./server --listen-ip 192.168.1.78 --listen-port 5000 --log-file NoProxyServer.log
 ```
 
 **Terminal 2 - Run Client:**
 ```bash
-./client --target-ip 192.168.1.92 --target-port 4000 \
-         --timeout 2 --max-retries 5 --log-file client.log
+./client --target-ip 192.168.1.78 --target-port 5000 \
+         --timeout 2 --max-retries 5 --log-file NoProxyClient.log
 ```
 
 Then type messages and press Enter.
@@ -63,7 +63,7 @@ Then type messages and press Enter.
 
 **Terminal 1 - Start Server:**
 ```bash
-./server --listen-ip 127.0.0.1 --listen-port 5000 --log-file server.log
+./server --listen-ip 192.168.1.78 --listen-port 5000 --log-file server.log
 ```
 
 **Terminal 2 - Start Proxy:**
@@ -116,32 +116,68 @@ Then type messages and press Enter.
 
 ### Test 1: 0% drop, 0% delay
 ```bash
+./server --listen-ip 192.168.1.78 --listen-port 5000 --log-file PerfectNetworkServer.log
+```
+
+```bash
 ./proxy --listen-ip 192.168.1.92 --listen-port 4000 \
         --target-ip 192.168.1.78 --target-port 5000 \
         --client-drop 0 --server-drop 0 \
         --client-delay 0 --server-delay 0 \
-        --log-file proxy.log
+        --log-file PerfectProxy.log
 ```
 
+```bash
+./client --target-ip 192.168.1.92 --target-port 4000 \
+         --timeout 2 --max-retries 5 --log-file PerfectNetworkClient.log
+```
+
+
 ### Test 2: 5% drop, 0% delay
+
+```bash
+./server --listen-ip 192.168.1.78 --listen-port 5000 --log-file 5DropServer.log
+```
+
 ```bash
 ./proxy --listen-ip 192.168.1.92 --listen-port 4000 \
         --target-ip 192.168.1.78 --target-port 5000 \
         --client-drop 5 --server-drop 5 \
         --client-delay 0 --server-delay 0 \
-        --log-file proxy.log
+        --log-file 5DropProxy.log
 ```
 
+```bash
+./client --target-ip 192.168.1.92 --target-port 4000 \
+         --timeout 2 --max-retries 5 --log-file 5DropClient.log
+```
+
+
 ### Test 3: 10% drop, 0% delay
+
+```bash
+./server --listen-ip 192.168.1.78 --listen-port 5000 --log-file 10DropServer.log
+```
+
 ```bash
 ./proxy --listen-ip 192.168.1.92 --listen-port 4000 \
         --target-ip 192.168.1.78 --target-port 5000 \
         --client-drop 10 --server-drop 10 \
         --client-delay 0 --server-delay 0 \
-        --log-file proxy.log
+        --log-file 10DropProxy.log
+```
+
+```bash
+./client --target-ip 192.168.1.92 --target-port 4000 \
+         --timeout 2 --max-retries 5 --log-file 10DropClient.log
 ```
 
 ### Test 4: 0% drop, 50% delay (100-500ms)
+
+```bash
+./server --listen-ip 192.168.1.78 --listen-port 5000 --log-file 50DelayServer.log
+```
+
 ```bash
 ./proxy --listen-ip 192.168.1.92 --listen-port 4000 \
         --target-ip 192.168.1.78 --target-port 5000 \
@@ -149,10 +185,20 @@ Then type messages and press Enter.
         --client-delay 50 --server-delay 50 \
         --client-delay-time-min 100 --client-delay-time-max 500 \
         --server-delay-time-min 100 --server-delay-time-max 500 \
-        --log-file proxy.log
+        --log-file 50DelayProxy.log
+```
+
+```bash
+./client --target-ip 192.168.1.92 --target-port 4000 \
+         --timeout 2 --max-retries 5 --log-file 50DelayClient.log
 ```
 
 ### Test 5: 0% drop, 100% delay (>= client timeout)
+
+```bash
+./server --listen-ip 192.168.1.78 --listen-port 5000 --log-file 100DelayServer.log
+```
+
 ```bash
 # With client timeout of 2 seconds, use delay > 2000ms
 ./proxy --listen-ip 192.168.1.92 --listen-port 4000 \
@@ -161,10 +207,20 @@ Then type messages and press Enter.
         --client-delay 100 --server-delay 100 \
         --client-delay-time-min 2500 --client-delay-time-max 3000 \
         --server-delay-time-min 2500 --server-delay-time-max 3000 \
-        --log-file proxy.log
+        --log-file 100DelayProxy.log
+```
+
+```bash
+./client --target-ip 192.168.1.92 --target-port 4000 \
+         --timeout 2 --max-retries 5 --log-file 100DelayClient.log
 ```
 
 ### Test 6: 50% drop, 50% delay
+
+```bash
+./server --listen-ip 192.168.1.78 --listen-port 5000 --log-file 50Drop50DelayServer.log
+```
+
 ```bash
 ./proxy --listen-ip 192.168.1.92 --listen-port 4000 \
         --target-ip 192.168.1.78 --target-port 5000 \
@@ -172,7 +228,12 @@ Then type messages and press Enter.
         --client-delay 50 --server-delay 50 \
         --client-delay-time-min 2500 --client-delay-time-max 3000 \
         --server-delay-time-min 2500 --server-delay-time-max 3000 \
-        --log-file proxy.log
+        --log-file 50Drop50DelayProxy.log
+```
+
+```bash
+./client --target-ip 192.168.1.92 --target-port 4000 \
+         --timeout 2 --max-retries 5 --log-file 50Drop50DelayClient.log
 ```
 
 ## Log Visualization
